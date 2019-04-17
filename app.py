@@ -1,23 +1,34 @@
-from flask import Flask, render_template, request, url_for, session, redirect, flash
+from flask import Flask, render_template, request, url_for, session, redirect, flash,make_response
 import requests
 import json
 from flask_mysqldb import MySQL
-from flask_oauth import OAuth
+import functools
+# from flask_oauth import OAuth
+from authlib.client import OAuth2Session
+import google.oauth2.credentials
+import googleapiclient.discovery
 import urllib.request
-import flask_dance
 import os
 
 # You must configure these 3 values from Google APIs console
 # https://code.google.com/apis/console
-GOOGLE_CLIENT_ID = '952741789324-7bjgjv478nonvtrujqf7aurpkpprpt2m.apps.googleusercontent.com'
-GOOGLE_CLIENT_SECRET = 'YejsARKSxYR-WhDe2nF2p0QS'
+CLIENT_ID = '952741789324-7bjgjv478nonvtrujqf7aurpkpprpt2m.apps.googleusercontent.com'
+CLIENT_SECRET = 'YejsARKSxYR-WhDe2nF2p0QS'
 REDIRECT_URI = '/oauth2callback'  # one of the Redirect URIs from Google APIs console
-
+# FN_BASE_URI - 'http://localhost:5000'
+ACCESS_TOKEN_URI = 'https://www.googleapis.com/oauth2/v4/token'
+AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent'
+AUTHORIZATION_SCOPE ='openid email profile'
+# AUTH_REDIRECT_URI = os.environ.get("REDIRECT_URI", default=False)
+AUTH_REDIRECT_URI = 'http://127.0.0.1:5000/oauth2callback' # one of the Redirect URIs from Google APIs console
+BASE_URI = 'http://127.0.0.1:5000'
+AUTH_TOKEN_KEY = 'auth_token'
+AUTH_STATE_KEY = 'auth_state'
+USER_INFO_KEY = 'user_info'
 
 app = Flask(__name__)
 #in order to use sessions you need to use session keys
 app.secret_key = 'development key'
-oauth = OAuth()
 
 # config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
@@ -29,17 +40,6 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #Init MySQL
 mysql = MySQL(app)
 
-#Setup for Google api with scope 'https://www.googleapis.com/auth/userinfo.email'
-google = oauth.remote_app('google',base_url='https://www.google.com/accounts/',
-authorize_url='https://accounts.google.com/o/oauth2/auth',
-request_token_url=None,
-request_token_params={'scope': 'https://www.googleapis.com/auth/userinfo.email',
-'response_type': 'code','prompt' : 'consent'}, #prompt : consent is very important as it always redirects to the google page after logging in once.
-access_token_url='https://accounts.google.com/o/oauth2/token',
-access_token_method='POST',
-access_token_params={'grant_type': 'authorization_code'},
-consumer_key=GOOGLE_CLIENT_ID,
-consumer_secret=GOOGLE_CLIENT_SECRET)
 
 # the destination of the text directory
 text =  "C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text"
@@ -67,13 +67,14 @@ def home():
     print("article type:", type(article))
     access_token = session.get('access_token')
 
-    # if not 'access_token' in session:
-    if access_token is None:
+    if not is_logged_in():
         return render_template('alpha.html', data = article)
-
     else:
-        # email = getAccess(access_token)
-        return render_template('alpha.html', data = article, email = session['email'])
+        if 'email' in session:
+            return render_template('alpha.html', data = article, email = session['email'])
+        else:
+            return render_template('alpha.html', data = article)
+
 
 @app.route('/category/<id>')
 def category(id):
@@ -110,27 +111,67 @@ def category(id):
     else:
         return '',204
 
+
+def no_cache(view):
+    @functools.wraps(view)
+    def no_cache_impl(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+
+    return functools.update_wrapper(no_cache_impl, view)
+
 @app.route('/login')
+@no_cache
 def login():
-    callback=url_for('authorized', _external=True)
-    return google.authorize(callback=callback)
+    session_outh = OAuth2Session(CLIENT_ID, CLIENT_SECRET,
+                            scope=AUTHORIZATION_SCOPE, redirect_uri=AUTH_REDIRECT_URI)
+
+    uri, state = session_outh.create_authorization_url(AUTHORIZATION_URL)
+
+    session[AUTH_STATE_KEY] = state
+    print("state:",session[AUTH_STATE_KEY])
+    print("state type:",type(session[AUTH_STATE_KEY]))
+    session.permanent = True
+    print("uri:",uri)
+    return redirect(uri, code=302)
 
 @app.route(REDIRECT_URI)
-@google.authorized_handler
-def authorized(resp):
-    access_token = resp['access_token']
-    session['access_token'] = access_token, ''
-    # in python bollean true is depicted as True
-    session['logged_in'] = True
-    # Request user info from google so that we could display welcome %username% after login
-    email = getAccess(session['access_token'])
-    print('email outside the getAccess function:',email)
+@no_cache
+def authorized():
+    print("Inside authorized")
 
-    return redirect(url_for('home'))
+    req_state = request.args.get('state', default=None, type=None)
+    print('req_state:',type(req_state))
+    print('req_state:',req_state)
+    print("session:",session[AUTH_STATE_KEY])
+    if req_state != session[AUTH_STATE_KEY]:
+        response = make_response('Invalid state parameter', 401)
+        return response
+    else:
+        session_outh = OAuth2Session(CLIENT_ID, CLIENT_SECRET,
+                                scope=AUTHORIZATION_SCOPE,
+                                state=session[AUTH_STATE_KEY],
+                                redirect_uri=AUTH_REDIRECT_URI)
 
-@google.tokengetter
-def get_access_token():
-    return session.get('access_token')
+        oauth2_tokens = session_outh.fetch_access_token(
+                            ACCESS_TOKEN_URI,
+                            authorization_response=request.url)
+
+        session[AUTH_TOKEN_KEY] = oauth2_tokens
+        session['logged_in'] = True
+        user_info = get_user_info()
+        session['email'] = user_info['email']
+        print(session['email'])
+        return redirect(url_for('home'), code=302)
+
+        # email = getAccess(session['access_token'])
+        # print('email outside the getAccess function:',email)
+
+        # return redirect(url_for('home'))
+
 
 @app.route('/logout')
 def logout():
@@ -146,15 +187,16 @@ def logout():
     #     return('An error occurred.')
     # # session.clear()
 
-    session.pop('access_token', None)
+    session.pop(AUTH_TOKEN_KEY, None)
+    session.pop(AUTH_STATE_KEY, None)
+    session.pop(USER_INFO_KEY, None)
     session.pop('logged_in', None)
     session.pop('email', None)
     session.pop('url', None)
 
-    #completely logout out from all google accounts in the browser
-    # return redirect("https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://127.0.0.1:5000")
+    return redirect(BASE_URI, code=302)
 
-    return redirect(url_for('home'))
+    # return redirect(url_for('home'))
 
 # this function is called when a logged in user clicks on any news link
 @app.route('/receiver', methods = ['POST'])
@@ -312,7 +354,30 @@ def debug_api_data():
     # print (type(format(data)))
     return format(data['articles'])
 
+def is_logged_in():
+    return True if AUTH_TOKEN_KEY in session else False
 
+def build_credentials():
+    if not is_logged_in():
+        raise Exception('User must be logged in')
+
+    oauth2_tokens = session[AUTH_TOKEN_KEY]
+
+    return google.oauth2.credentials.Credentials(
+                oauth2_tokens['access_token'],
+                refresh_token=oauth2_tokens['refresh_token'],
+                client_id=CLIENT_ID,
+                client_secret=CLIENT_SECRET,
+                token_uri=ACCESS_TOKEN_URI)
+
+def get_user_info():
+    credentials = build_credentials()
+
+    oauth2_client = googleapiclient.discovery.build(
+                        'oauth2', 'v2',
+                        credentials=credentials)
+
+    return oauth2_client.userinfo().get().execute()
 
 
 
