@@ -9,6 +9,7 @@ import google.oauth2.credentials
 import googleapiclient.discovery
 import urllib.request
 import os
+from pathlib import Path
 
 # You must configure these 3 values from Google APIs console
 # https://code.google.com/apis/console
@@ -42,7 +43,9 @@ mysql = MySQL(app)
 
 
 # the destination of the text directory
-text =  "C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text"
+# text =  "C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text"
+# text = os.path.join("NewsApp", "text")
+text = Path("C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text")
 
 @app.route('/')
 def home():
@@ -51,7 +54,9 @@ def home():
     # data = r.json()
 
     # retreive the data from the file that has the top news from news api
-    with open(os.path.join(text, "news.txt"), "r") as file_x:
+    # with open(os.path.join(text, "news.txt"), "r") as file_x:
+    file_to_open = text / "news.txt"
+    with open(file_to_open) as file_x:
         if file_x.mode == 'r':
             contents = file_x.read()
             data = json.loads(contents)
@@ -87,7 +92,9 @@ def category(id):
         part2 = '.txt'
         category_file = ''.join([id,part2])
         print (category_file)
-        with open(os.path.join(text, category_file), "r") as file_c:
+        # with open(os.path.join(text, category_file), "r") as file_c:
+        file_to_open = text / category_file
+        with open(text / file_to_open) as file_c:
             if file_c.mode == 'r':
                 contents = file_c.read()
                 data = json.loads(contents)
@@ -98,10 +105,10 @@ def category(id):
         # article = data['articles'][:15]         #First 15 elements
         article = data['articles']                #All elements to be send to the template
 
-        access_token = session.get('access_token')
+        # access_token = session.get('access_token')
 
         # if not 'access_token' in session:
-        if access_token is None:
+        if not is_logged_in():
             return render_template('alpha.html', data = article)
 
         # Request user info from google so that we could display welcome %username% after login
@@ -129,7 +136,7 @@ def login():
     session_outh = OAuth2Session(CLIENT_ID, CLIENT_SECRET,
                             scope=AUTHORIZATION_SCOPE, redirect_uri=AUTH_REDIRECT_URI)
 
-    uri, state = session_outh.create_authorization_url(AUTHORIZATION_URL)
+    uri, state = session_outh.authorization_url(AUTHORIZATION_URL)
 
     session[AUTH_STATE_KEY] = state
     print("state:",session[AUTH_STATE_KEY])
