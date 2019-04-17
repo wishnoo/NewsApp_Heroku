@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+  <title>NewsApp</title>
+
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700%7CLato:300,400" rel="stylesheet">
+
+  <!-- web-fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,500' rel='stylesheet' type='text/css'>
+
+  <!-- Bootstrap -->
+  <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet">
+
+  <!-- font-awesome -->
+  <link href="{{url_for('static', filename='fonts/font-awesome/font-awesome.min.css')}}" rel="stylesheet">
+
+  <!-- Mobile Menu Style -->
+  <link href="{{url_for('static', filename='css/mobile-menu.css')}}" rel="stylesheet">
+
+  <!-- Owl carousel -->
+  <link href="{{url_for('static', filename='css/owl.carousel.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='css/owl.theme.default.min.css')}}" rel="stylesheet">
+
+  <!-- Custom stlylesheet -->
+  <link href="{{url_for('static', filename='css/style.css')}}" rel="stylesheet">
+
+
+
+</head>
+
+<body>
+  <!-- Script to convert ISO-8601 to local time -->
+  <script src="{{url_for('static', filename='js/moment.min.js')}}"></script>
+
+  <div id="main-wrapper">
+  <div class="uc-mobile-menu-pusher">
+  <div class="content-wrapper">
+  <!-- <span class="border border-dark"> -->
+
+  <!-- navbar code from includes folder -->
+  {% include 'includes/_navbar.html'  %}
+
+  {% block body %}{% endblock %}
+  <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> -->
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> -->
+
+  <!-- jquery Core-->
+  <script src="{{url_for('static', filename='js/jquery-2.1.4.min.js')}}"></script>
+
+  <!-- Bootstrap -->
+  <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+
+  <!-- Theme Menu -->
+  <script src="{{url_for('static', filename='js/mobile-menu.js')}}"></script>
+
+  <!-- Owl carousel -->
+  <script src="{{url_for('static', filename='js/owl.carousel.min.js')}}"></script>
+
+  <!-- Theme Script -->
+  <script src="{{url_for('static', filename='js/script.js')}}"></script>
+
+  <!-- Custom js file -->
+  <script src="{{url_for('static', filename='js/news.js')}}"></script>
+
+
+  <!-- </span> -->
+  </div>
+  </div>
+
+  </div>
+  <!-- Button trigger modal -->
+<!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+  Launch demo modal
+</button> -->
+
+{% include 'includes/_feedbackModal.html'  %}
+
+</body>
+
+</html>
