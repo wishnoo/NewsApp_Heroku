@@ -52,19 +52,19 @@ text = Path("C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text")
 @app.route('/')
 def home():
     # Use request to get the data from news api for the top headlines
-    # r = requests.get('https://newsapi.org/v2/top-headlines?country=us&apiKey=13ed18aed5aa424bb3afa52a4bfde4fe')
-    # data = r.json()
+      r = requests.get('https://newsapi.org/v2/top-headlines?country=us&apiKey=13ed18aed5aa424bb3afa52a4bfde4fe')
+      data = r.json()
 
     # retreive the data from the file that has the top news from news api
     # with open(os.path.join(text, "news.txt"), "r") as file_x:
-    file_to_open = text / "news.txt"
-    with open(file_to_open) as file_x:
-        if file_x.mode == 'r':
-            contents = file_x.read()
-            data = json.loads(contents)
-            # print(temp[0])
+    #file_to_open = text / "news.txt"
+    #with open(file_to_open) as file_x:
+    #    if file_x.mode == 'r':
+    #        contents = file_x.read()
+    #        data = json.loads(contents)
+    #        # print(temp[0])
 
-        file_x.close()
+    #    file_x.close()
     # Acess the title of the first element using the below statement
     # return data['articles'][0]['title']
 
