@@ -45,6 +45,8 @@ mysql = MySQL(app)
 # the destination of the text directory
 # text =  "C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text"
 # text = os.path.join("NewsApp", "text")
+
+# Use path function from python 3 to make the path compatible with the respective OS
 text = Path("C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text")
 
 @app.route('/')
