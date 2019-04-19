@@ -32,7 +32,7 @@ app = Flask(__name__)
 app.secret_key = 'development key'
 
 # config MySQL
-if os.environ.get('ENV') == 'production':
+if os.environ.get('ENV') == 'production': #Created an environmental variable in heruko named ENV
     app.config['debug'] = False
     app.config['MYSQL_HOST'] = 'us-cdbr-iron-east-02.cleardb.net'
     app.config['MYSQL_USER'] = 'b49bf4e8ca29d1'
@@ -190,7 +190,25 @@ def authorized():
         user_info = get_user_info()
         session['email'] = user_info['email']
         print(session['email'])
+
+        if 'email' in session :
+            # database call start
+            #Intialize cursor
+            print("Email in session")
+            cur = mysql.connection.cursor()
+
+            cur.execute("INSERT IGNORE INTO users (email) VALUES (%s)", (session['email'],))
+
+            #Commit to DB
+            mysql.connection.commit()
+            print ('email inside getAccess function:', session['email'])
+            #Close the connection
+            cur.close()
+
         return redirect(url_for('home'), code=302)
+
+
+
 
         # email = getAccess(session['access_token'])
         # print('email outside the getAccess function:',email)
