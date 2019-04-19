@@ -113,7 +113,7 @@ def category(id):
         print (category_file)
         # with open(os.path.join(text, category_file), "r") as file_c:
         file_to_open = text / category_file
-        with open(text / file_to_open) as file_c:
+        with open(file_to_open) as file_c:
             if file_c.mode == 'r':
                 contents = file_c.read()
                 data = json.loads(contents)
