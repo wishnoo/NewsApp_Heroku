@@ -32,11 +32,13 @@ app = Flask(__name__)
 app.secret_key = 'development key'
 
 # config MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'flaskdb'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+if os.environ.get('ENV') == 'production':
+
+    app.config['MYSQL_HOST'] = 'localhost'
+    app.config['MYSQL_USER'] = 'root'
+    app.config['MYSQL_PASSWORD'] = ''
+    app.config['MYSQL_DB'] = 'flaskdb'
+    app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 #Init MySQL
 mysql = MySQL(app)
@@ -47,25 +49,29 @@ mysql = MySQL(app)
 # text = os.path.join("NewsApp", "text")
 
 # Use path function from python 3 to make the path compatible with the respective OS
-text = Path("C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text")
+# text = Path("C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text")
+text = Path("text")
 
 @app.route('/')
 def home():
-    # Use request to get the data from news api for the top headlines
-      r = requests.get('https://newsapi.org/v2/top-headlines?country=us&apiKey=13ed18aed5aa424bb3afa52a4bfde4fe')
-      data = r.json()
+    #----- Use request to get the data from news api for the top headlines
+    # r = requests.get('https://newsapi.org/v2/top-headlines?country=us&apiKey=13ed18aed5aa424bb3afa52a4bfde4fe')
+    # data = r.json()
 
-    # retreive the data from the file that has the top news from news api
-    # with open(os.path.join(text, "news.txt"), "r") as file_x:
-    #file_to_open = text / "news.txt"
-    #with open(file_to_open) as file_x:
-    #    if file_x.mode == 'r':
-    #        contents = file_x.read()
-    #        data = json.loads(contents)
-    #        # print(temp[0])
 
-    #    file_x.close()
-    # Acess the title of the first element using the below statement
+    # ----- retreive the data from the file that has the top news from news api
+    #with open(os.path.join(text, "news.txt"), "r") as file_x:
+    file_to_open = text / "news.txt"
+    with open(file_to_open) as file_x:
+        if file_x.mode == 'r':
+            contents = file_x.read()
+            data = json.loads(contents)
+            # print(temp[0])
+
+        file_x.close()
+
+
+    #----- Access the title of the first element using the below statement
     # return data['articles'][0]['title']
 
     # article = data['articles'][:15]         #First 15 elements
@@ -101,7 +107,6 @@ def category(id):
                 contents = file_c.read()
                 data = json.loads(contents)
                 # print(temp[0])
-
             file_c.close()
 
         # article = data['articles'][:15]         #First 15 elements
@@ -392,5 +397,4 @@ def get_user_info():
 
 
 if __name__ == '__main__':
-    #app.run(debug=True)
-	app.run()
+    app.run(debug=True)
