@@ -21,8 +21,8 @@ ACCESS_TOKEN_URI = 'https://www.googleapis.com/oauth2/v4/token'
 AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent'
 AUTHORIZATION_SCOPE ='openid email profile'
 # AUTH_REDIRECT_URI = os.environ.get("REDIRECT_URI", default=False)
-AUTH_REDIRECT_URI = 'http://127.0.0.1:5000/oauth2callback' # one of the Redirect URIs from Google APIs console
-BASE_URI = 'http://127.0.0.1:5000'
+# AUTH_REDIRECT_URI = 'http://127.0.0.1:5000/oauth2callback' # one of the Redirect URIs from Google APIs console
+# BASE_URI = 'http://127.0.0.1:5000'
 AUTH_TOKEN_KEY = 'auth_token'
 AUTH_STATE_KEY = 'auth_state'
 USER_INFO_KEY = 'user_info'
@@ -33,12 +33,23 @@ app.secret_key = 'development key'
 
 # config MySQL
 if os.environ.get('ENV') == 'production':
-
+    app.config['debug'] = False
+    app.config['MYSQL_HOST'] = 'us-cdbr-iron-east-02.cleardb.net'
+    app.config['MYSQL_USER'] = 'b49bf4e8ca29d1'
+    app.config['MYSQL_PASSWORD'] = 'fcded3ea'
+    app.config['MYSQL_DB'] = 'heroku_b4f7e73acc276ba'
+    app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+    AUTH_REDIRECT_URI = 'https://newsapp-heroku.herokuapp.com//oauth2callback' # one of the Redirect URIs from Google APIs console
+    BASE_URI = 'https://newsapp-heroku.herokuapp.com/'
+else:
+    app.config['debug'] = True
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config['MYSQL_PASSWORD'] = ''
     app.config['MYSQL_DB'] = 'flaskdb'
     app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+    AUTH_REDIRECT_URI = 'http://127.0.0.1:5000/oauth2callback' # one of the Redirect URIs from Google APIs console
+    BASE_URI = 'http://127.0.0.1:5000'
 
 #Init MySQL
 mysql = MySQL(app)
@@ -397,4 +408,4 @@ def get_user_info():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
