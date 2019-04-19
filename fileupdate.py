@@ -11,7 +11,8 @@ i = 1
 # to assign a timedelta object we use the following statement
 # diff_in_m = datetime.timedelta(minutes=2)
 diff_in_m = 31
-text = "C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text"
+# text = "C:\\Users\\STEALTH\\Documents\\Python\\Newsapp\\text"
+text = "text"
 # datetime.timedelta object cannot be compared with int and only with datetime.timedelta object
 # while diff_in_s > datetime.timedelta(seconds=10):
 
