@@ -1,3 +1,3 @@
 web: gunicorn app:app
 
-clock: python fileupdate.py
+clock: python clock.py
