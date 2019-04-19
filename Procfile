@@ -1,3 +1,3 @@
 web: gunicorn app:app
 
-web: python fileupdate.py
+worker: python fileupdate.py
