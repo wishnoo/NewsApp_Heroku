@@ -247,7 +247,7 @@ def receive():
     data = request.get_json(force=True)
     print (data)
 
-    if 'access_token' in session:
+    if is_logged_in():
         print("Inside receiver:",session['email'])
         session['url'] = data['data']
         email = session['email']
@@ -285,7 +285,7 @@ def receive():
 
 @app.route('/feedback',methods = ['POST'])
 def feedback():
-    if 'access_token' in session:
+    if is_logged_in():
         if 'like' not in request.form or 'relevant' not in request.form or 'novelty' not in request.form or 'readability' not in request.form or 'authority' not in request.form :
             flash('please give a valid input!!!', 'error')
             # return redirect(url_for('home'))
@@ -324,7 +324,7 @@ def timer():
     count = request.get_json(force=True)
     print (count)
 
-    if 'access_token' in session:
+    if is_logged_in():
         email = session['email']
         url = session['url']
         # database call start
