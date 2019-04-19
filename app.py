@@ -39,7 +39,7 @@ if os.environ.get('ENV') == 'production':
     app.config['MYSQL_PASSWORD'] = 'fcded3ea'
     app.config['MYSQL_DB'] = 'heroku_b4f7e73acc276ba'
     app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-    AUTH_REDIRECT_URI = 'https://newsapp-heroku.herokuapp.com//oauth2callback' # one of the Redirect URIs from Google APIs console
+    AUTH_REDIRECT_URI = 'https://newsapp-heroku.herokuapp.com/oauth2callback' # one of the Redirect URIs from Google APIs console
     BASE_URI = 'https://newsapp-heroku.herokuapp.com/'
 else:
     app.config['debug'] = True
