@@ -54,7 +54,7 @@ def timed_job():
 
 if __name__ == '__main__':
     scheduler = BlockingScheduler()
-    scheduler.add_job(timed_job, 'interval', seconds=5)
+    scheduler.add_job(timed_job, 'interval', minutes=30)
     print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
     try:
         scheduler.start()
