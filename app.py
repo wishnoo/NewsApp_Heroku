@@ -65,28 +65,22 @@ text = Path("text")
 
 @app.route('/')
 def home():
-    #----- Use request to get the data from news api for the top headlines
-    # r = requests.get('https://newsapi.org/v2/top-headlines?country=us&apiKey=13ed18aed5aa424bb3afa52a4bfde4fe')
-    # data = r.json()
+    #----- open a connection
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM news ORDER BY publishedAt DESC LIMIT 20")
+    myresult = cur.fetchall()
+    #Close the connection
+    cur.close()
 
-
-    # ----- retreive the data from the file that has the top news from news api
-    #with open(os.path.join(text, "news.txt"), "r") as file_x:
-    file_to_open = text / "news.txt"
-    with open(file_to_open) as file_x:
-        if file_x.mode == 'r':
-            contents = file_x.read()
-            data = json.loads(contents)
-            # print(temp[0])
-
-        file_x.close()
-
-
-    #----- Access the title of the first element using the below statement
-    # return data['articles'][0]['title']
+    # ----- Append the dict into a list
+    list = []
+    # print('myresult',myresult)
+    for first in myresult:
+        list.append(first)
 
     # article = data['articles'][:15]         #First 15 elements
-    article = data['articles']         #All elements
+    # article = data['articles']         #All elements
+    article = list        #All elements
     print("article in home:", len(article))
     print("article type:", type(article))
     access_token = session.get('access_token')
@@ -102,36 +96,34 @@ def home():
 
 @app.route('/category/<id>')
 def category(id):
-    list = ['business','sports','health','sports','science','technology']
+    list = ['business','health','sports','science','technology']
     if id in list:
         print(id)
-        print("in list")
+        print("inside cartegory route:")
 
-        # To retreive data from text file
-        part2 = '.txt'
-        category_file = ''.join([id,part2])
-        print (category_file)
-        # with open(os.path.join(text, category_file), "r") as file_c:
-        file_to_open = text / category_file
-        with open(file_to_open) as file_c:
-            if file_c.mode == 'r':
-                contents = file_c.read()
-                data = json.loads(contents)
-                # print(temp[0])
-            file_c.close()
+        #----- open a connection
+        cur = mysql.connection.cursor()
+        #----- An sql query to fetch the last 20 rows in the table
+        sql = "SELECT * FROM " + id + " ORDER BY publishedAt DESC LIMIT 20"
+        cur.execute(sql)
+        myresult = cur.fetchall()
+        #----- Close the connection
+        cur.close()
+
+        #----- Here the cursor fetches the data as a tuple of dicts and hence we need to Append the dict into a list
+        list = []
+        # print('myresult',myresult)
+        for first in myresult:
+            list.append(first)
 
         # article = data['articles'][:15]         #First 15 elements
-        article = data['articles']                #All elements to be send to the template
+        article = list              #All elements to be send to the template
+        # print('list:',list)
 
-        # access_token = session.get('access_token')
-
-        # if not 'access_token' in session:
         if not is_logged_in():
             return render_template('alpha.html', data = article)
 
-        # Request user info from google so that we could display welcome %username% after login
         else:
-            # email = getAccess(access_token)
             return render_template('alpha.html', data = article, email = session['email'])
     else:
         return '',204
@@ -207,29 +199,9 @@ def authorized():
 
         return redirect(url_for('home'), code=302)
 
-
-
-
-        # email = getAccess(session['access_token'])
-        # print('email outside the getAccess function:',email)
-
-        # return redirect(url_for('home'))
-
-
+# <----- Route for logging out ----->
 @app.route('/logout')
 def logout():
-    # revoke = requests.post('https://accounts.google.com/o/oauth2/revoke',
-    #   params={'token': session['access_token']},
-    #   headers = {'content-type': 'application/x-www-form-urlencoded'})
-    # status_code = getattr(revoke, 'status_code')
-    # if status_code == 200:
-    #     session.pop('access_token', None)
-    #     session.pop('logged_in', None)
-    #     return('Credentials successfully revoked.')
-    # else:
-    #     return('An error occurred.')
-    # # session.clear()
-
     session.pop(AUTH_TOKEN_KEY, None)
     session.pop(AUTH_STATE_KEY, None)
     session.pop(USER_INFO_KEY, None)
@@ -238,8 +210,6 @@ def logout():
     session.pop('url', None)
 
     return redirect(BASE_URI, code=302)
-
-    # return redirect(url_for('home'))
 
 # this function is called when a logged in user clicks on any news link
 @app.route('/receiver', methods = ['POST'])
@@ -348,46 +318,6 @@ def timer():
 def openurl():
     return render_template('openurl.html')
 
-# Get access to user data from google and store in to the database used by home() and category() if possible
-# urllib2 has been deprecated and we user urllib.request to invoke Request , urlopen and URLError
-def getAccess(access_token):
-    # access_token = session.get('access_token')
-    access_token = access_token[0]
-    # accessing user info from google
-    headers = {'Authorization': 'OAuth '+access_token}
-    req = urllib.request.Request('https://www.googleapis.com/oauth2/v1/userinfo',
-    None, headers)
-    try:
-        res = urllib.request.urlopen(req)
-    except urllib.request.URLError as e:
-        if e.code == 401:
-            # Unauthorized - bad token
-            session.pop('access_token', None)
-            return redirect(url_for('login'))
-            return res.read()
-
-    t = res.read()
-    temp = json.loads(t)
-    print(temp)
-    # name = temp['name']
-    # create an alert here so that we could inform the user that there was problem with the login
-    email = temp['email']
-    session['email'] = email
-
-    if email != "" :
-        # database call start
-        #Intialize cursor
-        cur = mysql.connection.cursor()
-
-        cur.execute("INSERT IGNORE INTO users (email) VALUES (%s)", (email,))
-
-        #Commit to DB
-        mysql.connection.commit()
-        print ('email inside getAccess function:', email)
-        #Close the connection
-        cur.close()
-        return email
-
 # Debug method to print the data of the news api result
 @app.route('/debug_api_data')
 def debug_api_data():
@@ -422,6 +352,26 @@ def get_user_info():
 
     return oauth2_client.userinfo().get().execute()
 
+@app.route('/sql_test')
+def sql_test():
+    cur = mysql.connection.cursor()
+    # current_state = ['club','summer','season','player']
+    # for obj in current_state:
+    #     cur.execute("INSERT IGNORE INTO testitems VALUES (%s)", (obj,))
+    #     #-----Commit to DB
+    #     mysql.connection.commit()
+    cur.execute( "select * from testitems")
+    records = cur.fetchall()
+    #-----Close the connection
+    cur.close()
+    # return format(current_state)
+    # print(records)
+    lists =[]
+    for i in records:
+        # print(i['Items'])
+        lists.append(i['Items'])
+    print(lists)
+    return format(records)
 
 if __name__ == '__main__':
     app.run()
