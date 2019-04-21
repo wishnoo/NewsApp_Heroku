@@ -33,7 +33,7 @@ app.secret_key = 'development key'
 
 # config MySQL
 if os.environ.get('ENV') == 'production': #Created an environmental variable in heruko named ENV
-    app.config['debug'] = False
+    app.config['DEBUG'] = False
     app.config['MYSQL_HOST'] = 'us-cdbr-iron-east-02.cleardb.net'
     app.config['MYSQL_USER'] = 'b49bf4e8ca29d1'
     app.config['MYSQL_PASSWORD'] = 'fcded3ea'
@@ -42,7 +42,7 @@ if os.environ.get('ENV') == 'production': #Created an environmental variable in 
     AUTH_REDIRECT_URI = 'https://newsapp-heroku.herokuapp.com/oauth2callback' # one of the Redirect URIs from Google APIs console
     BASE_URI = 'https://newsapp-heroku.herokuapp.com/'
 else:
-    app.config['debug'] = True
+    app.config['DEBUG'] = True
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config['MYSQL_PASSWORD'] = ''
@@ -421,8 +421,6 @@ def get_user_info():
                         credentials=credentials)
 
     return oauth2_client.userinfo().get().execute()
-
-
 
 
 if __name__ == '__main__':
