@@ -47,32 +47,32 @@ def timed_job():
     # print(cur.lastrowid, "record inserted.")
     cur.close()
 
-    # ----- Select the last 20 articles from the news table
-    cur = mydb.cursor()
-    sql = "SELECT * FROM news ORDER BY publishedAt DESC LIMIT 20"
-    cur.execute(sql)
-    myresult = cur.fetchall()
-    # print (myresult)
-    cur.close()
+    # # ----- Select the last 20 articles from the news table
+    # cur = mydb.cursor()
+    # sql = "SELECT * FROM news ORDER BY publishedAt DESC LIMIT 20"
+    # cur.execute(sql)
+    # myresult = cur.fetchall()
+    # # print (myresult)
+    # cur.close()
 
-    # ------ Insert the 20 articles into the file news
-    top = open(os.path.join(text,"news.txt"), "w+")
-    list = []
-    print('myresult',myresult)
-    for first in myresult:
-        dict = {}
-        dict['url'] = first[0]
-        dict['name'] = first[1]
-        dict['author'] = first[2]
-        dict['title'] = first[3]
-        dict['description'] = first[4]
-        dict['urlToImage'] = first[5]
-        dict['publishedAt'] = first[6]
-        dict['content'] = first[7]
-        list.append(dict)
-    # print('list',list)
-    top.write(json.dumps(list))
-    top.close()
+    # # ------ Insert the 20 articles into the file news
+    # top = open(os.path.join(text,"news.txt"), "w+")
+    # list = []
+    # print('myresult',myresult)
+    # for first in myresult:
+    #     dict = {}
+    #     dict['url'] = first[0]
+    #     dict['name'] = first[1]
+    #     dict['author'] = first[2]
+    #     dict['title'] = first[3]
+    #     dict['description'] = first[4]
+    #     dict['urlToImage'] = first[5]
+    #     dict['publishedAt'] = first[6]
+    #     dict['content'] = first[7]
+    #     list.append(dict)
+    # # print('list',list)
+    # top.write(json.dumps(list))
+    # top.close()
 
     # <------ write the data where category is business ------>
     r = requests.get(
