@@ -7,30 +7,36 @@ import datetime
 import time
 import mysql.connector
 
-# config MySQL
-# Created an environmental variable in heruko named ENV
-if os.environ.get('ENV') == 'production':
-    mydb = mysql.connector.connect(
-        host="us-cdbr-iron-east-02.cleardb.net",
-        user="b49bf4e8ca29d1",
-        passwd="fcded3ea",
-        database="heroku_b4f7e73acc276ba"
-    )
-else:
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="",
-        database="flaskdb"
-    )
 
-# ----- Path of the text file
-text = "text"
+# # ----- Path of the text file
+# text = "text"
 
 
 # sched = BlockingScheduler()
 # @sched.scheduled_job('interval', minutes=30)
 def timed_job():
+    #----- config MySQL
+    #----- Created an environmental variable in heruko named ENV
+    if os.environ.get('ENV') == 'production':
+        mydb = mysql.connector.connect(
+            host="us-cdbr-iron-east-02.cleardb.net",
+            user="b49bf4e8ca29d1",
+            passwd="fcded3ea",
+            database="heroku_b4f7e73acc276ba"
+        )
+    else:
+        mydb = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            passwd="",
+            database="flaskdb"
+        )
+
+    # if(mydb):
+    #     print("connection successfull")
+    # else:
+    #     print("Not successfull")
+
     # -----store the headlines into the database
     r = requests.get(
         'https://newsapi.org/v2/top-headlines?country=us&apiKey=13ed18aed5aa424bb3afa52a4bfde4fe')
@@ -43,8 +49,6 @@ def timed_job():
                item['description'], item['urlToImage'], item['publishedAt'], item['content'])
         cur.execute(sql, val)
     mydb.commit()
-    # print(len(articles), "record inserted.")
-    # print(cur.lastrowid, "record inserted.")
     cur.close()
 
     # # ----- Select the last 20 articles from the news table
@@ -149,9 +153,9 @@ def timed_job():
 
 
 if __name__ == '__main__':
-    timed_job()
+    # timed_job()
     scheduler = BlockingScheduler()
-    scheduler.add_job(timed_job, 'interval', minutes=30)
+    scheduler.add_job(timed_job, 'interval', minutes=2)
     print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
     try:
         scheduler.start()

@@ -256,22 +256,35 @@ def receive():
 @app.route('/feedback',methods = ['POST'])
 def feedback():
     if is_logged_in():
-        if 'like' not in request.form or 'relevant' not in request.form or 'novelty' not in request.form or 'readability' not in request.form or 'authority' not in request.form :
+        if 'like' not in request.form and 'relevant' not in request.form and 'novelty' not in request.form and 'readability' not in request.form and 'authority' not in request.form :
             flash('please give a valid input!!!', 'error')
             # return redirect(url_for('home'))
         else:
-            print(request.form['like'])
-            print(request.form['authority'])
+            try:
+                like = request.form['like']
+            except:
+                like = None
 
-            like = request.form['like']
-            relevant = request.form['relevant']
-            novelty = request.form['novelty']
-            readability = request.form['readability']
-            authority = request.form['authority']
+            try:
+                relevant = request.form['relevant']
+            except:
+                relevant = None
 
-            # print(type(like))
+            try:
+                novelty = request.form['novelty']
+            except:
+                novelty = None
 
-            # # try:
+            try:
+                readability = request.form['readability']
+            except:
+                readability = None
+
+            try:
+                authority = request.form['authority']
+            except:
+                authority = None
+
             # Add the feedback to the database
             #Intialize cursor
             cur = mysql.connection.cursor()
@@ -286,7 +299,7 @@ def feedback():
             # # except (MySQLdb.Error, MySQLdb.Warning) as e:
             # #     print(e)
             # #     return None
-        return redirect(url_for('home'))
+    return redirect(url_for('home'))
 
 # this function is called when the tab is active again and time is calculated
 @app.route('/timer', methods = ['POST'])
